@@ -1,0 +1,63 @@
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# Project folder
+BASE_DIR = Path(__file__).resolve().parent
+CHART_DIR = BASE_DIR / "charts"
+
+# Create charts folder if it does not exist
+CHART_DIR.mkdir(exist_ok=True)
+
+# Read cleaned dataset
+df = pd.read_csv(BASE_DIR / "cleaned_sales.csv")
+
+# Convert date column
+df["date"] = pd.to_datetime(df["date"])
+
+# Calculate revenue if not already available
+if "revenue" not in df.columns:
+    df["revenue"] = df["quantity"] * df["unit_price"]
+
+# Chart 1: Daily Revenue
+daily_revenue = df.groupby("date")["revenue"].sum()
+
+plt.figure(figsize=(10, 5))
+daily_revenue.plot(kind="line", marker="o")
+plt.title("Daily Sales Revenue")
+plt.xlabel("Date")
+plt.ylabel("Revenue")
+plt.grid(True)
+plt.tight_layout()
+plt.savefig(CHART_DIR / "daily_revenue.png")
+plt.close()
+
+# Chart 2: Product-wise Revenue
+product_revenue = df.groupby("product")["revenue"].sum().sort_values(ascending=False)
+
+plt.figure(figsize=(10, 5))
+product_revenue.plot(kind="bar")
+plt.title("Product-wise Sales Revenue")
+plt.xlabel("Product")
+plt.ylabel("Revenue")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig(CHART_DIR / "product_revenue.png")
+plt.close()
+
+# Chart 3: Product-wise Quantity
+product_quantity = df.groupby("product")["quantity"].sum().sort_values(ascending=False)
+
+plt.figure(figsize=(10, 5))
+product_quantity.plot(kind="bar")
+plt.title("Product-wise Quantity Sold")
+plt.xlabel("Product")
+plt.ylabel("Quantity Sold")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig(CHART_DIR / "product_quantity.png")
+plt.close()
+
+print("All charts created successfully!")
+print("Charts saved in:", CHART_DIR)
